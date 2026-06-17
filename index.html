@@ -82,7 +82,7 @@
   .stars-inp{display:flex;gap:6px;margin-bottom:10px;}
   .star-btn{font-size:28px;cursor:pointer;color:var(--border-strong);transition:transform 0.1s,color 0.1s;line-height:1;}
   .star-btn.lit{color:var(--peach);}
-  .review-ta{width:100%;border:1px solid var(--border-strong);border-radius:12px;padding:10px 12px;font-size:14px;resize:none;font-family:inherit;color:var(--text);background:var(--bg);line-height:1.5;}
+  .review-ta{width:100%;border:1px solid var(--border-strong);border-radius:12px;padding:10px 12px;font-size:14px;resize:vertical;font-family:inherit;color:var(--text);background:var(--bg);line-height:1.5;}
   .review-ta:focus{outline:none;border-color:var(--accent);}
   .save-btn{margin-top:8px;background:var(--accent);color:white;border:none;border-radius:10px;padding:8px 18px;font-size:13px;cursor:pointer;font-weight:600;}
   .notes-sec{padding:16px 20px;}
@@ -452,8 +452,7 @@ function renderShelf(){
       var pct=b.totalPages>0?Math.round(b.currentPage/b.totalPages*100):0;
       var prog=status==='reading'&&b.totalPages>0?'<div class="prog-wrap"><div class="prog-fill" style="width:'+pct+'%"></div></div><div class="prog-lbl">'+pct+'%</div>':'';
       var stars=b.rating>0?'<span class="stars-sm">'+'★'.repeat(b.rating)+'</span>':'';
-      html+='<div class="shelf-item" onclick="openBook(\''+b.id+'\')">'+cv+ph+'<div class="shelf-item-info"><div class="shelf-item-title">'+esc(b.title)+'</div><div class="shelf-item-author">'+esc(b.authors)+'</div><div>'+prog+'</div>'+
-      '<div class="item-meta">'+stars+'<span class="notes-badge">📝 '+nc+'</span></div></div></div>';
+      html+='<div class="shelf-item" onclick="openBook(\''+b.id+'\')">'+cv+ph+'<div class="shelf-item-info"><div class="shelf-item-title">'+esc(b.title)+'</div><div class="shelf-item-author">'+esc(b.authors)+'</div><div>'+prog+'</div><div class="item-meta">'+stars+'<span class="notes-badge">📝 '+nc+'</span></div></div></div>';
     });
     html+='</div>';
   });
@@ -556,7 +555,7 @@ function saveNote(){
   db.notes[curBookId].unshift({type:noteType,content:content,page:document.getElementById('notePage').value.trim(),createdAt:Date.now()});
   save();document.getElementById('noteModal').classList.add('hidden');renderDetail();toast('笔记已保存 🌷');
 }
-function delNote(i){if(!confirm('确认删除这条笔��？'))return;db.notes[curBookId].splice(i,1);save();renderDetail();toast('已删除');}
+function delNote(i){if(!confirm('确认删除这条笔记？'))return;db.notes[curBookId].splice(i,1);save();renderDetail();toast('已删除');}
 function renderAllNotes(){
   var el=document.getElementById('allNotesContent'),all=[];
   Object.keys(db.notes).forEach(function(bid){var b=db.books[bid];db.notes[bid].forEach(function(n){all.push({type:n.type,content:n.content,page:n.page,createdAt:n.createdAt,bookTitle:b?b.title:'[已删除]',bookId:bid});});});
@@ -583,24 +582,20 @@ function renderStats(){
     '<div class="report-btns"><button class="report-btn" onclick="openMonthReport()">📅 月度报告</button><button class="report-btn" onclick="openYearReport()">🌟 年度报告</button></div>'+
     '<div class="reviews-title">书评</div>'+rhtml;
 }
-// ---- REPORTS ----
 function closeRpt(e){
   if(!e||e.target===document.getElementById('rptOverlay'))
     document.getElementById('rptOverlay').classList.remove('show');
 }
-
 function bookChipHtml(b){
   var ph='<div class="rpt-book-chip-ph">📖</div>';
   var cv=b.thumb?'<img src="'+b.thumb.replace('http:','https:')+'" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'+ph:'';
   return '<div class="rpt-book-chip">'+(b.thumb?cv:ph)+'<span class="rpt-chip-title">'+esc(b.title)+'</span></div>';
 }
-
 function bestQuote(){
   var all=[];
   Object.values(db.notes).forEach(function(notes){ notes.forEach(function(n){ if(n.type==='quote'&&n.content) all.push(n.content); }); });
   return all.length ? all[Math.floor(Math.random()*all.length)] : '阅读，是最美好的习惯。';
 }
-
 function buildMonthCard(year, month){
   var books=Object.values(db.books);
   var doneBooks=books.filter(function(b){
@@ -614,7 +609,7 @@ function buildMonthCard(year, month){
   var booksHtml=doneBooks.length===0?'<span style="font-size:12px;color:#C4A898">本月暂无读完的书</span>':doneBooks.map(bookChipHtml).join('');
   var quote=bestQuote();
   var periodStr=year+'年'+(month+1)+'月';
-  var today=new Date(); var dateStr=year+'年'+(month+1)+'月'+new Date(year,month+1,0).getDate()+'日';
+  var dateStr=year+'年'+(month+1)+'月'+new Date(year,month+1,0).getDate()+'日';
   return '<div class="rpt-card">'+
     '<div class="rpt-header"><div class="rpt-tag">月度报告</div><div class="rpt-period">'+periodStr+'</div><div class="rpt-sub">书迹 · 阅读记录</div></div>'+
     '<div class="rpt-stats"><div class="rpt-stat"><div class="rpt-stat-n">'+doneBooks.length+'</div><div class="rpt-stat-l">本读完</div></div><div class="rpt-stat"><div class="rpt-stat-n">'+noteCount+'</div><div class="rpt-stat-l">条笔记</div></div></div>'+
@@ -623,7 +618,6 @@ function buildMonthCard(year, month){
     '<div class="rpt-footer"><div class="rpt-footer-date">'+dateStr+'</div><div class="rpt-footer-badge">书迹</div></div>'+
   '</div>';
 }
-
 function buildYearCard(year){
   var books=Object.values(db.books);
   var doneBooks=books.filter(function(b){ return b.status==='done'&&new Date(b.addedAt).getFullYear()===year; });
@@ -631,7 +625,6 @@ function buildYearCard(year){
   var avg=rated.length?(rated.reduce(function(s,b){return s+b.rating;},0)/rated.length).toFixed(1):'—';
   var noteCount=0;
   Object.values(db.notes).forEach(function(notes){ notes.forEach(function(n){ if(new Date(n.createdAt).getFullYear()===year) noteCount++; }); });
-  // best book
   var bestBook=rated.sort(function(a,b){return b.rating-a.rating;})[0];
   var bestHtml='<div class="rpt-sec-label">年度最爱</div>';
   if(bestBook){
@@ -639,7 +632,6 @@ function buildYearCard(year){
     var bcv=bestBook.thumb?'<img src="'+bestBook.thumb.replace('http:','https:')+'" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'+bph:'';
     bestHtml+='<div class="rpt-best">'+(bestBook.thumb?bcv:bph)+'<div><div class="rpt-best-title">'+esc(bestBook.title)+'</div><div class="rpt-best-stars">'+'★'.repeat(bestBook.rating)+'☆'.repeat(5-bestBook.rating)+'</div></div></div>';
   } else { bestHtml+='<div style="font-size:12px;color:#C4A898">暂无评分书目</div>'; }
-  // monthly bars
   var monthlyCounts=[];
   for(var m=0;m<12;m++){
     monthlyCounts.push(books.filter(function(b){ return b.status==='done'&&new Date(b.addedAt).getFullYear()===year&&new Date(b.addedAt).getMonth()===m; }).length);
@@ -660,10 +652,8 @@ function buildYearCard(year){
     '<div class="rpt-footer"><div class="rpt-footer-date">'+year+'年</div><div class="rpt-footer-badge">书迹</div></div>'+
   '</div>';
 }
-
 function openMonthReport(){
   document.getElementById('rptModalTitle').textContent='月度报告 📅';
-  // build month selector from all months that have data, plus current month
   var sel=document.getElementById('rptMonthPicker');
   sel.innerHTML='';
   var now=new Date();
@@ -680,20 +670,17 @@ function openMonthReport(){
   genMonthReport();
   document.getElementById('rptOverlay').classList.add('show');
 }
-
 function genMonthReport(){
   var val=document.getElementById('rptMonthPicker').value;
   var parts=val.split('-'), y=parseInt(parts[0]), m=parseInt(parts[1]);
   document.getElementById('rptCardWrap').innerHTML=buildMonthCard(y,m);
 }
-
 function openYearReport(){
   document.getElementById('rptModalTitle').textContent='年度报告 🌟';
   document.getElementById('rptMonthSel').style.display='none';
   document.getElementById('rptCardWrap').innerHTML=buildYearCard(new Date().getFullYear());
   document.getElementById('rptOverlay').classList.add('show');
 }
-
 function fmtDate(ts){
   var d=new Date(ts),now=new Date(),diff=Math.floor((now-d)/1000);
   if(diff<60)return '刚刚';if(diff<3600)return Math.floor(diff/60)+'分钟前';
